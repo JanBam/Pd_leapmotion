@@ -32,7 +32,14 @@ void Dispatcher::onFocusLost(const Controller& controller) {
 }
 
 void Dispatcher::onDeviceChange(const Controller& controller) {
+    const DeviceList devices = controller.devices();
+
     post("Leap:DeviceChange");
+
+    for (int i=0; i<devices.count(); i++) {
+	post("id: %s (isStreaming: %d)", devices[i].toString().c_str(), devices[i].isStreaming());
+	//	post("id: %s (isStreaming: %d)", devices[i].toString());
+    }
 }
 
 void Dispatcher::onServiceConnect(const Controller& controller) {
