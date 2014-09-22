@@ -38,7 +38,6 @@ void Dispatcher::onDeviceChange(const Controller& controller) {
 
     for (int i=0; i<devices.count(); i++) {
 	post("id: %s (isStreaming: %d)", devices[i].toString().c_str(), devices[i].isStreaming());
-	//	post("id: %s (isStreaming: %d)", devices[i].toString());
     }
 }
 
