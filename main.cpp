@@ -40,6 +40,16 @@ class leapmotion: public flext_base
     int fingers_velocity_flag;
     int fingers_size_flag;
     int gestures_flag;
+
+
+    const t_symbol *sym_direction,*sym_position,*sym_velocity,*sym_size,*sym_duration,*sym_id;
+    const t_symbol *sym_tool,*sym_tool_count;
+    const t_symbol *sym_hand,*sym_palm_position,*sym_palm_velocity,*sym_palm_normal,*sym_sphere_radius,*sym_sphere_center;
+    const t_symbol *sym_fingers,*sym_finger_count;
+    const t_symbol *sym_type,*sym_TYPE_INVALID,*sym_TYPE_SWIPE,*sym_TYPE_CIRCLE,*sym_TYPE_SCREEN_TAP,*sym_TYPE_KEY_TAP;
+    const t_symbol *sym_state,*sym_STATE_INVALID,*sym_STATE_START,*sym_STATE_UPDATE,*sym_STATE_STOP;
+
+
     
 public:
     leapmotion()
@@ -100,7 +110,41 @@ public:
         fingers_velocity_flag = false;
         fingers_size_flag = false;
         gestures_flag = false;
-        
+
+	// Initialize symbols
+	//
+	sym_direction = MakeSymbol("direction");
+	sym_position = MakeSymbol("position");
+	sym_velocity = MakeSymbol("velocity");
+	sym_size = MakeSymbol("size");
+	sym_duration = MakeSymbol("duration");
+	sym_id = MakeSymbol("id");
+	//
+	sym_tool = MakeSymbol("tool");
+	sym_tool_count = MakeSymbol("tool_count");
+	//
+	sym_hand = MakeSymbol("hand");
+	sym_palm_position = MakeSymbol("palm_position");
+	sym_palm_velocity = MakeSymbol("palm_velocity");
+	sym_palm_normal = MakeSymbol("palm_normal");
+	sym_sphere_radius = MakeSymbol("sphere_radius");
+	sym_sphere_center = MakeSymbol("sphere_center");
+	//
+	sym_fingers = MakeSymbol("fingers");	
+	sym_finger_count = MakeSymbol("finger_count");
+	//
+	sym_type = MakeSymbol("type");
+	sym_TYPE_INVALID = MakeSymbol("TYPE_INVALID");
+	sym_TYPE_SWIPE = MakeSymbol("TYPE_SWIPE");
+	sym_TYPE_CIRCLE = MakeSymbol("TYPE_CIRCLE");
+	sym_TYPE_SCREEN_TAP = MakeSymbol("TYPE_SCREEN_TAP");
+	sym_TYPE_KEY_TAP = MakeSymbol("TYPE_KEY_TAP");
+	//
+	sym_state = MakeSymbol("state");
+	sym_STATE_INVALID = MakeSymbol("STATE_INVALID");
+	sym_STATE_START = MakeSymbol("STATE_START");
+	sym_STATE_UPDATE = MakeSymbol("STATE_UPDATE");
+	sym_STATE_STOP = MakeSymbol("STATE_STOP");
     }
     ~leapmotion()
     {
@@ -112,7 +156,7 @@ public:
     {
 
         Frame frame;
-        t_atom generalInfo[6];
+        AtomList generalInfo(6);
         int num_hands, num_tools, num_gestures;
         frame = dispatcher.frame;
         num_hands = frame.hands().count();
@@ -120,231 +164,231 @@ public:
         num_gestures = frame.gestures().count();
         
         if(general_flag){
-            SETFLOAT(&generalInfo[0], (float)frame.id());
-            SETFLOAT(&generalInfo[1], (float)frame.timestamp());
-            SETFLOAT(&generalInfo[2], (float)num_hands);
-            SETFLOAT(&generalInfo[3], (float)frame.fingers().count());
-            SETFLOAT(&generalInfo[4], (float)frame.tools().count());
-            SETFLOAT(&generalInfo[5], (float)frame.gestures().count());
-            ToOutList(0, 6, generalInfo);        
+            SetFloat(generalInfo[0], (float)frame.id());
+            SetFloat(generalInfo[1], (float)frame.timestamp());
+            SetFloat(generalInfo[2], (float)num_hands);
+            SetFloat(generalInfo[3], (float)frame.fingers().count());
+            SetFloat(generalInfo[4], (float)frame.tools().count());
+            SetFloat(generalInfo[5], (float)frame.gestures().count());
+            ToOutList(0, generalInfo);        
         }
         // tools
         for(int i = 0; i<num_tools; i++){
             Tool tool;
             tool = frame.tools()[i];
-
-            t_atom toolInfo[5];
+	    
+            AtomList toolInfo(5);
             if(tools_position_flag) {
-                SETFLOAT(&toolInfo[0], i);
-                SETSYMBOL(&toolInfo[1], gensym("direction"));
-                SETFLOAT(&toolInfo[2], tool.direction().x);
-                SETFLOAT(&toolInfo[3], tool.direction().y);
-                SETFLOAT(&toolInfo[4], tool.direction().z);
-                ToOutAnything(1, gensym("tool"), 5, toolInfo);
+                SetFloat(toolInfo[0], i);
+                SetSymbol(toolInfo[1], sym_direction);
+                SetFloat(toolInfo[2], tool.direction().x);
+                SetFloat(toolInfo[3], tool.direction().y);
+                SetFloat(toolInfo[4], tool.direction().z);
+                ToOutAnything(1, sym_tool, toolInfo.Count(), toolInfo.Atoms());
             }
             if(tools_position_flag) {
-                SETFLOAT(&toolInfo[0], i);
-                SETSYMBOL(&toolInfo[1], gensym("position"));
-                SETFLOAT(&toolInfo[2], tool.tipPosition().x);
-                SETFLOAT(&toolInfo[3], tool.tipPosition().y);
-                SETFLOAT(&toolInfo[4], tool.tipPosition().z);
-                ToOutAnything(1, gensym("tool"), 5, toolInfo);
+                SetFloat(toolInfo[0], i);
+                SetSymbol(toolInfo[1], sym_position);
+                SetFloat(toolInfo[2], tool.tipPosition().x);
+                SetFloat(toolInfo[3], tool.tipPosition().y);
+                SetFloat(toolInfo[4], tool.tipPosition().z);
+                ToOutAnything(1, sym_tool, toolInfo.Count(), toolInfo.Atoms());
             }
             if(tools_velocity_flag){
-                SETFLOAT(&toolInfo[0], i);
-                SETSYMBOL(&toolInfo[1], gensym("velocity"));
-                SETFLOAT(&toolInfo[2], tool.tipVelocity().x);
-                SETFLOAT(&toolInfo[3], tool.tipVelocity().y);
-                SETFLOAT(&toolInfo[4], tool.tipVelocity().z);
-                ToOutAnything(1, gensym("tool"), 5, toolInfo);
+                SetFloat(toolInfo[0], i);
+                SetSymbol(toolInfo[1], sym_velocity);
+                SetFloat(toolInfo[2], tool.tipVelocity().x);
+                SetFloat(toolInfo[3], tool.tipVelocity().y);
+                SetFloat(toolInfo[4], tool.tipVelocity().z);
+                ToOutAnything(1, sym_tool, toolInfo.Count(), toolInfo.Atoms());
             }
             if(tools_size_flag){
-                SETFLOAT(&toolInfo[0], i); 
-                SETSYMBOL(&toolInfo[1], gensym("size"));
-                SETFLOAT(&toolInfo[2], tool.width());
-                SETFLOAT(&toolInfo[3], tool.length());
-                ToOutAnything(1, gensym("tool"), 4, toolInfo);
-            }
+                SetFloat(toolInfo[0], i); 
+                SetSymbol(toolInfo[1], sym_size);
+                SetFloat(toolInfo[2], tool.width());
+                SetFloat(toolInfo[3], tool.length());
+                ToOutAnything(1, sym_tool, 4, toolInfo.Atoms()); // hmm..
+	    }
         }
         // hands and fingers
-        for(int i = 0; i<num_hands; i++){
+	for(int i = 0; i<num_hands; i++){
             Hand hand;
             hand = frame.hands()[i];
             int num_fingers = hand.fingers().count();
             int num_tools = hand.tools().count();
-            t_atom handInfo[5];
-
+            AtomList handInfo(5);
+	    
             if(hands_direction_flag){
                 // direction
-                SETFLOAT(&handInfo[0], i);
-                SETSYMBOL(&handInfo[1], gensym("direction"));
-                SETFLOAT(&handInfo[2], hand.direction().x);
-                SETFLOAT(&handInfo[3], hand.direction().y);
-                SETFLOAT(&handInfo[4], hand.direction().z);
-                ToOutAnything(1, gensym("hand"), 5, handInfo);
+                SetFloat(handInfo[0], i);
+                SetSymbol(handInfo[1], sym_direction);
+                SetFloat(handInfo[2], hand.direction().x);
+                SetFloat(handInfo[3], hand.direction().y);
+                SetFloat(handInfo[4], hand.direction().z);
+                ToOutAnything(1, sym_hand, handInfo.Count(), handInfo.Atoms());
             }
             if(hands_palm_position_flag){
                 // position
-                SETFLOAT(&handInfo[0], i);
-                SETSYMBOL(&handInfo[1], gensym("palm_position"));
-                SETFLOAT(&handInfo[2], hand.palmPosition().x);
-                SETFLOAT(&handInfo[3], hand.palmPosition().y);
-                SETFLOAT(&handInfo[4], hand.palmPosition().z);
-                ToOutAnything(1, gensym("hand"), 5, handInfo);
+                SetFloat(handInfo[0], i);
+                SetSymbol(handInfo[1], sym_palm_position);
+                SetFloat(handInfo[2], hand.palmPosition().x);
+                SetFloat(handInfo[3], hand.palmPosition().y);
+                SetFloat(handInfo[4], hand.palmPosition().z);
+                ToOutAnything(1, sym_hand, handInfo.Count(), handInfo.Atoms());
             }
             if(hands_palm_velocity_flag){
                 // velocity
-                SETFLOAT(&handInfo[0], i);
-                SETSYMBOL(&handInfo[1], gensym("palm_velocity"));
-                SETFLOAT(&handInfo[2], hand.palmVelocity().x);
-                SETFLOAT(&handInfo[3], hand.palmVelocity().y);
-                SETFLOAT(&handInfo[4], hand.palmVelocity().z);
-                ToOutAnything(1, gensym("hand"), 5, handInfo);
+                SetFloat(handInfo[0], i);
+                SetSymbol(handInfo[1], sym_palm_velocity);
+                SetFloat(handInfo[2], hand.palmVelocity().x);
+                SetFloat(handInfo[3], hand.palmVelocity().y);
+                SetFloat(handInfo[4], hand.palmVelocity().z);
+                ToOutAnything(1, sym_hand, handInfo.Count(), handInfo.Atoms());
             }
             if(hands_palm_normal_flag){
                 // normal
-                SETFLOAT(&handInfo[0], i);
-                SETSYMBOL(&handInfo[1], gensym("palm_normal"));
-                SETFLOAT(&handInfo[2], hand.palmVelocity().x);
-                SETFLOAT(&handInfo[3], hand.palmVelocity().y);
-                SETFLOAT(&handInfo[4], hand.palmVelocity().z);
-                ToOutAnything(1, gensym("hand"), 5, handInfo);
+                SetFloat(handInfo[0], i);
+                SetSymbol(handInfo[1], sym_palm_normal);
+                SetFloat(handInfo[2], hand.palmVelocity().x);
+                SetFloat(handInfo[3], hand.palmVelocity().y);
+                SetFloat(handInfo[4], hand.palmVelocity().z);
+                ToOutAnything(1, sym_hand, handInfo.Count(), handInfo.Atoms());
             }
             if(hands_sphere_radius_flag){
                 // sphere radius
-                SETFLOAT(&handInfo[0], i);
-                SETSYMBOL(&handInfo[1], gensym("sphere_radius"));
-                SETFLOAT(&handInfo[2], hand.sphereRadius());
-                ToOutAnything(1, gensym("hand"), 3, handInfo);
+                SetFloat(handInfo[0], i);
+                SetSymbol(handInfo[1], sym_sphere_radius);
+                SetFloat(handInfo[2], hand.sphereRadius());
+                ToOutAnything(1, sym_hand, 3, handInfo.Atoms());
             }
             if(hands_sphere_center_flag){
                 // sphere center
-                SETFLOAT(&handInfo[0], i);
-                SETSYMBOL(&handInfo[1], gensym("sphere_center"));
-                SETFLOAT(&handInfo[2], hand.sphereCenter().x);
-                SETFLOAT(&handInfo[3], hand.sphereCenter().y);
-                SETFLOAT(&handInfo[4], hand.sphereCenter().z);
-                ToOutAnything(1, gensym("hand"), 5, handInfo);
+                SetFloat(handInfo[0], i);
+                SetSymbol(handInfo[1], sym_sphere_center);
+                SetFloat(handInfo[2], hand.sphereCenter().x);
+                SetFloat(handInfo[3], hand.sphereCenter().y);
+                SetFloat(handInfo[4], hand.sphereCenter().z);
+                ToOutAnything(1, sym_hand, handInfo.Count(), handInfo.Atoms());
             }
             if(hands_finger_count_flag){
                 // finger count
-                SETFLOAT(&handInfo[0], i);
-                SETSYMBOL(&handInfo[1], gensym("finger_count"));
-                SETFLOAT(&handInfo[2], num_fingers);
-                ToOutAnything(1, gensym("hand"), 3, handInfo);
+                SetFloat(handInfo[0], i);
+                SetSymbol(handInfo[1], sym_finger_count);
+                SetFloat(handInfo[2], num_fingers);
+                ToOutAnything(1, sym_hand, 3, handInfo.Atoms());
             }
             if(hands_tool_count_flag){
                 // tool count
-                SETFLOAT(&handInfo[0], i);
-                SETSYMBOL(&handInfo[1], gensym("tool_count"));
-                SETFLOAT(&handInfo[2], num_tools);
-                ToOutAnything(1, gensym("hand"), 3, handInfo);
+                SetFloat(handInfo[0], i);
+                SetSymbol(handInfo[1], sym_tool_count);
+                SetFloat(handInfo[2], num_tools);
+                ToOutAnything(1, sym_hand, 3, handInfo.Atoms());
             }
             for(int j = 0; j<num_fingers; j++){
                 Finger finger;
                 finger = hand.fingers()[j];                    
-                t_atom fingerInfo[7];
+                AtomList fingerInfo(7);
                 if(fingers_direction_flag){
-                    SETFLOAT(&fingerInfo[0], i); // index
-                    SETSYMBOL(&fingerInfo[1], gensym("fingers"));
-                    SETFLOAT(&fingerInfo[2], j);
-                    SETSYMBOL(&fingerInfo[3], gensym("direction"));
-                    SETFLOAT(&fingerInfo[4], finger.direction().x);
-                    SETFLOAT(&fingerInfo[5], finger.direction().y);
-                    SETFLOAT(&fingerInfo[6], finger.direction().z);
-                    ToOutAnything(1, gensym("hand"), 7, fingerInfo);
+                    SetFloat(fingerInfo[0], i); // index
+                    SetSymbol(fingerInfo[1], sym_fingers);
+                    SetFloat(fingerInfo[2], j);
+                    SetSymbol(fingerInfo[3], sym_direction);
+                    SetFloat(fingerInfo[4], finger.direction().x);
+                    SetFloat(fingerInfo[5], finger.direction().y);
+                    SetFloat(fingerInfo[6], finger.direction().z);
+                    ToOutAnything(1, sym_hand, fingerInfo.Count(), fingerInfo.Atoms());
                 }
                 if(fingers_position_flag){
-                    SETFLOAT(&fingerInfo[0], i); // index
-                    SETSYMBOL(&fingerInfo[1], gensym("fingers"));
-                    SETFLOAT(&fingerInfo[2], j);
-                    SETSYMBOL(&fingerInfo[3], gensym("position"));
-                    SETFLOAT(&fingerInfo[4], finger.tipPosition().x);
-                    SETFLOAT(&fingerInfo[5], finger.tipPosition().y);
-                    SETFLOAT(&fingerInfo[6], finger.tipPosition().z);
-                    ToOutAnything(1, gensym("hand"), 7, fingerInfo);
+                    SetFloat(fingerInfo[0], i); // index
+                    SetSymbol(fingerInfo[1], sym_fingers);
+                    SetFloat(fingerInfo[2], j);
+                    SetSymbol(fingerInfo[3], sym_position);
+                    SetFloat(fingerInfo[4], finger.tipPosition().x);
+                    SetFloat(fingerInfo[5], finger.tipPosition().y);
+                    SetFloat(fingerInfo[6], finger.tipPosition().z);
+                    ToOutAnything(1, sym_hand, fingerInfo.Count(), fingerInfo.Atoms());
                 }
                 if(fingers_velocity_flag){
-                    SETFLOAT(&fingerInfo[0], i); // index
-                    SETSYMBOL(&fingerInfo[1], gensym("fingers"));
-                    SETFLOAT(&fingerInfo[2], j);
-                    SETSYMBOL(&fingerInfo[3], gensym("velocity"));
-                    SETFLOAT(&fingerInfo[4], finger.tipVelocity().x);
-                    SETFLOAT(&fingerInfo[5], finger.tipVelocity().y);
-                    SETFLOAT(&fingerInfo[6], finger.tipVelocity().z);
-                    ToOutAnything(1, gensym("hand"), 7, fingerInfo);
+                    SetFloat(fingerInfo[0], i); // index
+                    SetSymbol(fingerInfo[1], sym_fingers);
+                    SetFloat(fingerInfo[2], j);
+                    SetSymbol(fingerInfo[3], sym_velocity);
+                    SetFloat(fingerInfo[4], finger.tipVelocity().x);
+                    SetFloat(fingerInfo[5], finger.tipVelocity().y);
+                    SetFloat(fingerInfo[6], finger.tipVelocity().z);
+                    ToOutAnything(1, sym_hand, fingerInfo.Count(), fingerInfo.Atoms());
                 }
                 if(fingers_size_flag){
-                    SETFLOAT(&fingerInfo[0], i); // index
-                    SETSYMBOL(&fingerInfo[1], gensym("fingers"));
-                    SETFLOAT(&fingerInfo[2], j);
-                    SETSYMBOL(&fingerInfo[3], gensym("size"));
-                    SETFLOAT(&fingerInfo[4], finger.width());
-                    SETFLOAT(&fingerInfo[5], finger.length());
-                    ToOutAnything(1, gensym("hand"), 6, fingerInfo);
+                    SetFloat(fingerInfo[0], i); // index
+                    SetSymbol(fingerInfo[1], sym_fingers);
+                    SetFloat(fingerInfo[2], j);
+                    SetSymbol(fingerInfo[3], sym_size);
+                    SetFloat(fingerInfo[4], finger.width());
+                    SetFloat(fingerInfo[5], finger.length());
+                    ToOutAnything(1, sym_hand, 6, fingerInfo.Atoms());
                 }
             }
         }
-        t_atom gestureCountInfo[1];            
-        for(int i = 0;i < num_gestures; i++){
-            Gesture gesture;
-            gesture = frame.gestures()[i];
+	//AtomList gestureCountInfo(1);            
+	for(int i = 0;i < num_gestures; i++){
+	    Gesture gesture;
+	    gesture = frame.gestures()[i];
             //type
-            t_atom gestureTypeInfo[3];
-            SETFLOAT(&gestureTypeInfo[0], i);
-            SETSYMBOL(&gestureTypeInfo[1], gensym("type"));
+            AtomList gestureTypeInfo(3);
+            SetFloat(gestureTypeInfo[0], i);
+            SetSymbol(gestureTypeInfo[1], sym_type);
             switch(gesture.type())
             {
                 case Gesture::TYPE_INVALID:
-                    SETSYMBOL(&gestureTypeInfo[2], gensym("TYPE_INVALID"));
+                    SetSymbol(gestureTypeInfo[2], sym_TYPE_INVALID);
                     break;
                 case Gesture::TYPE_SWIPE:
-                    SETSYMBOL(&gestureTypeInfo[2], gensym("TYPE_SWIPE"));
+                    SetSymbol(gestureTypeInfo[2], sym_TYPE_SWIPE);
                     break;
                 case Gesture::TYPE_CIRCLE:
-                    SETSYMBOL(&gestureTypeInfo[2], gensym("TYPE_CIRCLE"));
+                    SetSymbol(gestureTypeInfo[2], sym_TYPE_CIRCLE);
                     break;
                 case Gesture::TYPE_SCREEN_TAP:
-                    SETSYMBOL(&gestureTypeInfo[2], gensym("TYPE_SCREEN_TAP"));
+                    SetSymbol(gestureTypeInfo[2], sym_TYPE_SCREEN_TAP);
                     break;
                 case Gesture::TYPE_KEY_TAP:
-                    SETSYMBOL(&gestureTypeInfo[2], gensym("TYPE_KEY_TAP"));
+                    SetSymbol(gestureTypeInfo[2], sym_TYPE_KEY_TAP);
                     break;
             }
-            ToOutList(2, 3, gestureTypeInfo);
+            ToOutList(2, gestureTypeInfo);
 
             //state
-            t_atom gestureStateInfo[3];
-            SETFLOAT(&gestureStateInfo[0], i);
-            SETSYMBOL(&gestureStateInfo[1], gensym("state"));
+            AtomList gestureStateInfo(3);
+            SetFloat(gestureStateInfo[0], i);
+            SetSymbol(gestureStateInfo[1], sym_state);
             switch(gesture.state())
             {
                 case Gesture::STATE_INVALID:
-                    SETSYMBOL(&gestureStateInfo[2], gensym("STATE_INVALID"));
+                    SetSymbol(gestureStateInfo[2], sym_STATE_INVALID);
                     break;
                 case Gesture::STATE_START:
-                    SETSYMBOL(&gestureStateInfo[2], gensym("TYPE_START"));
+                    SetSymbol(gestureStateInfo[2], sym_STATE_START);
                     break;
                 case Gesture::STATE_UPDATE:
-                    SETSYMBOL(&gestureStateInfo[2], gensym("STATE_UPDATE"));
+                    SetSymbol(gestureStateInfo[2], sym_STATE_UPDATE);
                     break;
                 case Gesture::STATE_STOP:
-                    SETSYMBOL(&gestureStateInfo[2], gensym("TYPE_STOP"));
+                    SetSymbol(gestureStateInfo[2], sym_STATE_STOP);
                     break;
             }
-            ToOutList(2, 3, gestureStateInfo);
+            ToOutList(2, gestureStateInfo);
 
-            t_atom gestureDurationInfo[3];
-            SETFLOAT(&gestureDurationInfo[0], i);
-            SETSYMBOL(&gestureDurationInfo[1], gensym("duration"));
-            SETFLOAT(&gestureDurationInfo[2], gesture.duration());
-            ToOutList(2, 3, gestureDurationInfo);
+            AtomList gestureDurationInfo(3);
+            SetFloat(gestureDurationInfo[0], i);
+            SetSymbol(gestureDurationInfo[1], sym_duration);
+            SetFloat(gestureDurationInfo[2], gesture.duration());
+            ToOutList(2, gestureDurationInfo);
 
-            t_atom gestureIdInfo[3];
-            SETFLOAT(&gestureIdInfo[0], i);
-            SETSYMBOL(&gestureIdInfo[1], gensym("id"));
-            SETFLOAT(&gestureIdInfo[2], gesture.id());
-            ToOutList(2, 3, gestureIdInfo);
+            AtomList gestureIdInfo(3);
+            SetFloat(gestureIdInfo[0], i);
+            SetSymbol(gestureIdInfo[1], sym_id);
+            SetFloat(gestureIdInfo[2], gesture.id());
+            ToOutList(2, gestureIdInfo);
 
         }
     }
@@ -532,3 +576,4 @@ private:
 };
 
 FLEXT_NEW("leapmotion",leapmotion)
+
