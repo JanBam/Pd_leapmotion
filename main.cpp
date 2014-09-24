@@ -29,6 +29,8 @@ class leapmotion: public flext_base
     
     int hands_tool_count_flag;
     int hands_finger_count_flag;
+
+    int hands_basis_flag;
     
     int tools_direction_flag;
     int tools_position_flag;
@@ -49,6 +51,8 @@ class leapmotion: public flext_base
     const t_symbol *sym_type,*sym_TYPE_INVALID,*sym_TYPE_SWIPE,*sym_TYPE_CIRCLE,*sym_TYPE_SCREEN_TAP,*sym_TYPE_KEY_TAP;
     const t_symbol *sym_state,*sym_STATE_INVALID,*sym_STATE_START,*sym_STATE_UPDATE,*sym_STATE_STOP;
 
+    //v2
+    const t_symbol *sym_basis;
 
     
 public:
@@ -72,6 +76,8 @@ public:
         
         FLEXT_ADDMETHOD_(0, "hands_finger_count", m_hands_finger_count);
         FLEXT_ADDMETHOD_(0, "hands_tool_count", m_hands_tool_count);
+
+        FLEXT_ADDMETHOD_(0, "hands_basis", m_hands_basis);
 
         FLEXT_ADDMETHOD_(0, "tools_direction", m_tools_direction);
         FLEXT_ADDMETHOD_(0, "tools_position", m_tools_position);
@@ -100,6 +106,8 @@ public:
         hands_finger_count_flag = false;
         hands_tool_count_flag = false;
     
+	hands_basis_flag = false;
+
         tools_direction_flag = false;
         tools_position_flag = false;
         tools_velocity_flag = false;
@@ -145,6 +153,10 @@ public:
 	sym_STATE_START = MakeSymbol("STATE_START");
 	sym_STATE_UPDATE = MakeSymbol("STATE_UPDATE");
 	sym_STATE_STOP = MakeSymbol("STATE_STOP");
+
+	//v2
+	sym_basis = MakeSymbol("basis");
+
     }
     ~leapmotion()
     {
@@ -173,6 +185,7 @@ public:
             ToOutList(0, generalInfo);        
         }
         // tools
+	// TO UPGRADE
         for(int i = 0; i<num_tools; i++){
             Tool tool;
             tool = frame.tools()[i];
@@ -284,6 +297,27 @@ public:
                 SetFloat(handInfo[2], num_tools);
                 ToOutAnything(1, sym_hand, 3, handInfo.Atoms());
             }
+
+
+	    // v2
+	    if(hands_basis_flag){
+		AtomList handBasisInfo(11);
+		Matrix handBasis = hand.basis(); 
+
+		SetFloat(handBasisInfo[0], i);
+		SetSymbol(handBasisInfo[1], sym_basis);
+		SetFloat(handBasisInfo[2], handBasis.xBasis.x); 
+		SetFloat(handBasisInfo[3], handBasis.xBasis.y); 
+		SetFloat(handBasisInfo[4], handBasis.xBasis.z); 
+		SetFloat(handBasisInfo[5], handBasis.yBasis.x); 
+		SetFloat(handBasisInfo[6], handBasis.yBasis.y); 
+		SetFloat(handBasisInfo[7], handBasis.yBasis.z);
+		SetFloat(handBasisInfo[8], handBasis.zBasis.x);  
+		SetFloat(handBasisInfo[9], handBasis.zBasis.y);  
+		SetFloat(handBasisInfo[10], handBasis.zBasis.z);  
+		ToOutAnything(1, sym_hand, handBasisInfo.Count(), handBasisInfo.Atoms());
+	    }
+
             for(int j = 0; j<num_fingers; j++){
                 Finger finger;
                 finger = hand.fingers()[j];                    
@@ -420,6 +454,10 @@ public:
     {
         hands_tool_count_flag = s;
     }
+    void m_hands_basis(int s)
+    {
+	hands_basis_flag = s;
+    }
     void m_hands_sphere_radius(int s)
     {
         hands_sphere_radius_flag = s;
@@ -519,7 +557,10 @@ public:
 
         post("finger count:%s", flag_to_string(hands_finger_count_flag));
         post("tool count:%s", flag_to_string(hands_tool_count_flag));
-        post("sphere radius:%s", flag_to_string(hands_sphere_radius_flag));
+        
+	post("hands basis:%s", flag_to_string(hands_basis_flag));
+	
+	post("sphere radius:%s", flag_to_string(hands_sphere_radius_flag));
         post("sphere center:%s", flag_to_string(hands_sphere_center_flag));
         
         post("-Tools-");
@@ -563,6 +604,8 @@ private:
     FLEXT_CALLBACK_I(m_hands_sphere_center);
     FLEXT_CALLBACK_I(m_hands_finger_count);
     FLEXT_CALLBACK_I(m_hands_tool_count);
+
+    FLEXT_CALLBACK_I(m_hands_basis);
 
     FLEXT_CALLBACK_I(m_tools_direction);
     FLEXT_CALLBACK_I(m_tools_position);
