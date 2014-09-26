@@ -648,7 +648,9 @@ public:
         
 	post("confidence:%s", flag_to_string(hands_confidence_flag));
 	post("is_right:%s", flag_to_string(hands_is_right_flag));
-	post("hands basis:%s", flag_to_string(hands_basis_flag));
+	post("hands_basis:%s", flag_to_string(hands_basis_flag));
+	post("grab_strength:%s", flag_to_string(hands_grab_strength_flag));
+	post("pinch_strength:%s", flag_to_string(hands_pinch_strength_flag));
 	post("arm:%s", flag_to_string(hands_arm_flag));
 	
 	post("sphere radius:%s", flag_to_string(hands_sphere_radius_flag));
