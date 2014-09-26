@@ -33,6 +33,8 @@ class leapmotion: public flext_base
     int hands_basis_flag;
     int hands_confidence_flag;
     int hands_is_right_flag;
+    int hands_grab_strength_flag;
+    int hands_pinch_strength_flag;
     
     int tools_direction_flag;
     int tools_position_flag;
@@ -54,7 +56,7 @@ class leapmotion: public flext_base
     const t_symbol *sym_state,*sym_STATE_INVALID,*sym_STATE_START,*sym_STATE_UPDATE,*sym_STATE_STOP;
 
     //v2
-    const t_symbol *sym_basis,*sym_confidence,*sym_is_right;
+    const t_symbol *sym_basis,*sym_confidence,*sym_is_right,*sym_pinch_strength,*sym_grab_strength;;
 
     
 public:
@@ -82,6 +84,9 @@ public:
         FLEXT_ADDMETHOD_(0, "hands_basis", m_hands_basis);
         FLEXT_ADDMETHOD_(0, "hands_confidence", m_hands_confidence);
         FLEXT_ADDMETHOD_(0, "hands_is_right", m_hands_is_right);
+        FLEXT_ADDMETHOD_(0, "hands_grab_strength", m_hands_grab_strength);
+        FLEXT_ADDMETHOD_(0, "hands_pinch_strength", m_hands_pinch_strength);
+
 
         FLEXT_ADDMETHOD_(0, "tools_direction", m_tools_direction);
         FLEXT_ADDMETHOD_(0, "tools_position", m_tools_position);
@@ -113,6 +118,9 @@ public:
 	hands_basis_flag = false;
 	hands_confidence_flag = false;
 	hands_is_right_flag = false;
+	hands_grab_strength_flag = false;
+	hands_pinch_strength_flag = false;
+
 
         tools_direction_flag = false;
         tools_position_flag = false;
@@ -164,6 +172,8 @@ public:
 	sym_basis = MakeSymbol("basis");
 	sym_confidence = MakeSymbol("confidence");
 	sym_is_right = MakeSymbol("is_right");
+	sym_grab_strength = MakeSymbol("grab_strength");
+	sym_pinch_strength = MakeSymbol("pinch_strength");
 
     }
     ~leapmotion()
@@ -340,7 +350,20 @@ public:
 		ToOutAnything(1, sym_hand, 3, handInfo.Atoms());
 	    }
 
- 
+	    if(hands_grab_strength_flag){
+		SetFloat(handInfo[0], i);
+		SetSymbol(handInfo[1], sym_grab_strength);
+		SetFloat(handInfo[2], hand.grabStrength());
+		ToOutAnything(1, sym_hand, 3, handInfo.Atoms());
+	    }
+
+	    if(hands_pinch_strength_flag){
+		SetFloat(handInfo[0], i);
+		SetSymbol(handInfo[1], sym_pinch_strength);
+		SetFloat(handInfo[2], hand.pinchStrength());
+		ToOutAnything(1, sym_hand, 3, handInfo.Atoms());
+	    }
+			 
 
             for(int j = 0; j<num_fingers; j++){
                 Finger finger;
@@ -489,6 +512,14 @@ public:
     void m_hands_is_right(int s)
     {
 	hands_is_right_flag = s;
+    }
+    void m_hands_grab_strength(int s)
+    {
+	hands_grab_strength_flag = s;
+    }
+    void m_hands_pinch_strength(int s)
+    {
+	hands_pinch_strength_flag = s;
     }
     void m_hands_sphere_radius(int s)
     {
@@ -642,6 +673,8 @@ private:
     FLEXT_CALLBACK_I(m_hands_basis);
     FLEXT_CALLBACK_I(m_hands_confidence);
     FLEXT_CALLBACK_I(m_hands_is_right);
+    FLEXT_CALLBACK_I(m_hands_grab_strength);
+    FLEXT_CALLBACK_I(m_hands_pinch_strength);
 
     FLEXT_CALLBACK_I(m_tools_direction);
     FLEXT_CALLBACK_I(m_tools_position);
