@@ -37,7 +37,7 @@ class leapmotion: public flext_base
     int hands_pinch_strength_flag;
     int hands_arm_flag;
 
-    
+    int tools_id_flag;
     int tools_direction_flag;
     int tools_position_flag;
     int tools_velocity_flag;
@@ -92,7 +92,7 @@ public:
         FLEXT_ADDMETHOD_(0, "hands_arm", m_hands_arm);
 
 
-
+	FLEXT_ADDMETHOD_(0, "tools_id", m_tools_id);
         FLEXT_ADDMETHOD_(0, "tools_direction", m_tools_direction);
         FLEXT_ADDMETHOD_(0, "tools_position", m_tools_position);
         FLEXT_ADDMETHOD_(0, "tools_velocity", m_tools_velocity);
@@ -129,6 +129,7 @@ public:
 	hands_arm_flag = false;
 
 
+	tools_id_flag = false;
         tools_direction_flag = false;
         tools_position_flag = false;
         tools_velocity_flag = false;
@@ -213,12 +214,17 @@ public:
             ToOutList(0, generalInfo);        
         }
         // tools
-	// TO UPGRADE
         for(int i = 0; i<num_tools; i++){
             Tool tool;
             tool = frame.tools()[i];
 	    
             AtomList toolInfo(5);
+	    if(tools_id_flag) {
+		SetFloat(toolInfo[0], i);
+		SetSymbol(toolInfo[1], sym_id);
+		SetFloat(toolInfo[2], tool.id());
+		ToOutAnything(1, sym_tool, 3, toolInfo.Atoms());
+	    }
             if(tools_position_flag) {
                 SetFloat(toolInfo[0], i);
                 SetSymbol(toolInfo[1], sym_direction);
@@ -589,6 +595,10 @@ public:
     {
         hands_sphere_center_flag = s;
     }
+    void m_tools_id(int s)
+    {
+	tools_id_flag = s;
+    }
     void m_tools_direction(int s)
     {
         tools_direction_flag = s;
@@ -696,6 +706,7 @@ public:
         post("sphere center:%s", flag_to_string(hands_sphere_center_flag));
         
         post("-Tools-");
+        post("id:%s", flag_to_string(tools_id_flag));
         post("direction:%s", flag_to_string(tools_direction_flag));
         post("position:%s", flag_to_string(tools_position_flag));
         post("velocity:%s", flag_to_string(tools_velocity_flag));
@@ -745,6 +756,7 @@ private:
     FLEXT_CALLBACK_I(m_hands_pinch_strength);
     FLEXT_CALLBACK_I(m_hands_arm);
 
+    FLEXT_CALLBACK_I(m_tools_id);
     FLEXT_CALLBACK_I(m_tools_direction);
     FLEXT_CALLBACK_I(m_tools_position);
     FLEXT_CALLBACK_I(m_tools_velocity);
