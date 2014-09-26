@@ -36,12 +36,14 @@ class leapmotion: public flext_base
     int hands_grab_strength_flag;
     int hands_pinch_strength_flag;
     int hands_arm_flag;
+
     
     int tools_direction_flag;
     int tools_position_flag;
     int tools_velocity_flag;
     int tools_size_flag;
-    
+
+    int fingers_bones_flag;    
     int fingers_direction_flag;
     int fingers_position_flag;
     int fingers_velocity_flag;
@@ -57,7 +59,7 @@ class leapmotion: public flext_base
     const t_symbol *sym_state,*sym_STATE_INVALID,*sym_STATE_START,*sym_STATE_UPDATE,*sym_STATE_STOP;
 
     //v2
-    const t_symbol *sym_basis,*sym_confidence,*sym_is_right,*sym_pinch_strength,*sym_grab_strength,*sym_arm;
+    const t_symbol *sym_basis,*sym_confidence,*sym_is_right,*sym_pinch_strength,*sym_grab_strength,*sym_arm,*sym_bone;
 
     
 public:
@@ -90,11 +92,13 @@ public:
         FLEXT_ADDMETHOD_(0, "hands_arm", m_hands_arm);
 
 
+
         FLEXT_ADDMETHOD_(0, "tools_direction", m_tools_direction);
         FLEXT_ADDMETHOD_(0, "tools_position", m_tools_position);
         FLEXT_ADDMETHOD_(0, "tools_velocity", m_tools_velocity);
         FLEXT_ADDMETHOD_(0, "tools_size", m_tools_size);
 
+	FLEXT_ADDMETHOD_(0, "fingers_bones", m_fingers_bones);
         FLEXT_ADDMETHOD_(0, "fingers_direction", m_fingers_direction);
         FLEXT_ADDMETHOD_(0, "fingers_position", m_fingers_position);
         FLEXT_ADDMETHOD_(0, "fingers_velocity", m_fingers_velocity);
@@ -124,11 +128,13 @@ public:
 	hands_pinch_strength_flag = false;
 	hands_arm_flag = false;
 
+
         tools_direction_flag = false;
         tools_position_flag = false;
         tools_velocity_flag = false;
         tools_size_flag = false;
 
+	fingers_bones_flag = false;
         fingers_direction_flag = false;
         fingers_position_flag = false;
         fingers_velocity_flag = false;
@@ -177,6 +183,7 @@ public:
 	sym_grab_strength = MakeSymbol("grab_strength");
 	sym_pinch_strength = MakeSymbol("pinch_strength");
 	sym_arm = MakeSymbol("arm");
+	sym_bone = MakeSymbol("bone");
 
     }
     ~leapmotion()
@@ -390,6 +397,34 @@ public:
                 Finger finger;
                 finger = hand.fingers()[j];                    
                 AtomList fingerInfo(7);
+
+
+		if(fingers_bones_flag){
+		    AtomList fingerBoneInfo(14);
+		    Bone bone;
+		    for(int b=0; b<4; b++){
+			Bone::Type boneType = static_cast<Bone::Type>(b);
+			bone = finger.bone(boneType);
+
+			SetFloat(fingerBoneInfo[0], i);
+			SetSymbol(fingerBoneInfo[1], sym_fingers);
+			SetFloat(fingerBoneInfo[2], j);
+			SetSymbol(fingerBoneInfo[3], sym_bone);
+			SetFloat(fingerBoneInfo[4], b);
+			SetFloat(fingerBoneInfo[5], bone.prevJoint().x);
+			SetFloat(fingerBoneInfo[6], bone.prevJoint().y);
+			SetFloat(fingerBoneInfo[7], bone.prevJoint().z);
+			SetFloat(fingerBoneInfo[8], bone.nextJoint().x);
+			SetFloat(fingerBoneInfo[9], bone.nextJoint().y);
+			SetFloat(fingerBoneInfo[10], bone.nextJoint().z);
+			SetFloat(fingerBoneInfo[11], bone.direction().x);
+			SetFloat(fingerBoneInfo[12], bone.direction().y);
+			SetFloat(fingerBoneInfo[13], bone.direction().z);
+			ToOutAnything(1, sym_hand, fingerBoneInfo.Count(), fingerBoneInfo.Atoms());
+		    }
+		}
+
+
                 if(fingers_direction_flag){
                     SetFloat(fingerInfo[0], i); // index
                     SetSymbol(fingerInfo[1], sym_fingers);
@@ -570,6 +605,10 @@ public:
     {
         tools_size_flag = s;
     }
+    void m_fingers_bones(int s)
+    {
+	fingers_bones_flag = s;
+    }
     void m_fingers_direction(int s)
     {
         fingers_direction_flag = s;
@@ -667,6 +706,7 @@ public:
         post("position:%s", flag_to_string(fingers_position_flag));
         post("velocity:%s", flag_to_string(fingers_velocity_flag));
         post("size:%s", flag_to_string(fingers_size_flag));
+	post("bones:%s", flag_to_string(fingers_bones_flag));
         
         post("-Gestures-");
         post("TYPE_CIRCLE:%s", flag_to_string(controller.isGestureEnabled(Gesture::TYPE_CIRCLE)));
@@ -709,6 +749,8 @@ private:
     FLEXT_CALLBACK_I(m_tools_position);
     FLEXT_CALLBACK_I(m_tools_velocity);
     FLEXT_CALLBACK_I(m_tools_size);
+
+    FLEXT_CALLBACK_I(m_fingers_bones);
     FLEXT_CALLBACK_I(m_fingers_direction);
     FLEXT_CALLBACK_I(m_fingers_position);
     FLEXT_CALLBACK_I(m_fingers_velocity);
