@@ -48,6 +48,7 @@ class leapmotion: public flext_base
     int fingers_position_flag;
     int fingers_velocity_flag;
     int fingers_size_flag;
+    int fingers_is_extended_flag;
     int gestures_flag;
 
 
@@ -59,7 +60,7 @@ class leapmotion: public flext_base
     const t_symbol *sym_state,*sym_STATE_INVALID,*sym_STATE_START,*sym_STATE_UPDATE,*sym_STATE_STOP;
 
     //v2
-    const t_symbol *sym_basis,*sym_confidence,*sym_is_right,*sym_pinch_strength,*sym_grab_strength,*sym_arm,*sym_bone;
+    const t_symbol *sym_basis,*sym_confidence,*sym_is_right,*sym_pinch_strength,*sym_grab_strength,*sym_arm,*sym_bone,*sym_is_extended;
 
     
 public:
@@ -103,6 +104,7 @@ public:
         FLEXT_ADDMETHOD_(0, "fingers_position", m_fingers_position);
         FLEXT_ADDMETHOD_(0, "fingers_velocity", m_fingers_velocity);
         FLEXT_ADDMETHOD_(0, "fingers_size", m_fingers_size);
+        FLEXT_ADDMETHOD_(0, "fingers_is_extended", m_fingers_is_extended);
         FLEXT_ADDMETHOD_(0, "gestures", m_gestures);
         FLEXT_ADDMETHOD_(0, "info", m_info);
 
@@ -140,6 +142,7 @@ public:
         fingers_position_flag = false;
         fingers_velocity_flag = false;
         fingers_size_flag = false;
+	fingers_is_extended_flag = false;
         gestures_flag = false;
 
 	// Initialize symbols
@@ -185,6 +188,7 @@ public:
 	sym_pinch_strength = MakeSymbol("pinch_strength");
 	sym_arm = MakeSymbol("arm");
 	sym_bone = MakeSymbol("bone");
+	sym_is_extended = MakeSymbol("is_extended");
 
     }
     ~leapmotion()
@@ -470,6 +474,15 @@ public:
                     SetFloat(fingerInfo[5], finger.length());
                     ToOutAnything(1, sym_hand, 6, fingerInfo.Atoms());
                 }
+                if(fingers_is_extended_flag){
+                    SetFloat(fingerInfo[0], i); // index
+                    SetSymbol(fingerInfo[1], sym_fingers);
+                    SetFloat(fingerInfo[2], j);
+                    SetSymbol(fingerInfo[3], sym_is_extended);
+                    SetFloat(fingerInfo[4], finger.isExtended());
+                    ToOutAnything(1, sym_hand, 5, fingerInfo.Atoms());
+                }
+
             }
         }
 	//AtomList gestureCountInfo(1);            
@@ -635,6 +648,10 @@ public:
     {
         fingers_size_flag = s;
     }
+    void m_fingers_is_extended(int s)
+    {
+	fingers_is_extended_flag = s;
+    }
     void m_gestures(int argc, const t_atom *argv)
     {
         if(argc > 2){
@@ -717,6 +734,7 @@ public:
         post("position:%s", flag_to_string(fingers_position_flag));
         post("velocity:%s", flag_to_string(fingers_velocity_flag));
         post("size:%s", flag_to_string(fingers_size_flag));
+        post("is_extended:%s", flag_to_string(fingers_is_extended_flag));
 	post("bones:%s", flag_to_string(fingers_bones_flag));
         
         post("-Gestures-");
@@ -767,6 +785,7 @@ private:
     FLEXT_CALLBACK_I(m_fingers_position);
     FLEXT_CALLBACK_I(m_fingers_velocity);
     FLEXT_CALLBACK_I(m_fingers_size);
+    FLEXT_CALLBACK_I(m_fingers_is_extended);
     FLEXT_CALLBACK_V(m_gestures);
 };
 
